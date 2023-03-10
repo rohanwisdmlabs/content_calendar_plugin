@@ -77,7 +77,7 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-content_calendar.php';
  */
 
 //css
-
+require plugin_dir_path(__FILE__) . 'content_css.php';
  //database
 
  function cont_c_create_table()
