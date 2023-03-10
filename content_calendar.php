@@ -76,6 +76,68 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-content_calendar.php';
  * 
  */
 
+//css
+
+ //database
+
+ function cont_c_create_table()
+ {
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'cont_c_data';
+	$charset_collate = $wpdb->get_charset_collate();
+
+	$sql = "CREATE TABLE IF NOT EXISTS $table_name (
+	  id mediumint(9) AUTO_INCREMENT,
+	  date date NOT NULL,
+	  occasion varchar(255) NOT NULL,
+	  post_title varchar(255) NOT NULL,
+	  author int(11) NOT NULL,
+	  reviewer varchar(255) NOT NULL,
+	  PRIMARY KEY  (id)
+	) $charset_collate;";
+
+	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+	dbDelta($sql);
+ }
+
+ register_activation_hook(__FILE__, 'cont_c_create_table');
+
+
+ //form submission
+
+ function cont_c_handle_form()
+ {
+	global $wpdb;
+
+	if (isset($_POST['date']) && isset($_POST['occasion']) && isset($_POST['post_title']) && isset($_POST['author']) && isset($_POST['reviewer'])) {
+		$table_name = $wpdb->prefix . 'cont_c_data';
+		$date = sanitize_text_field($_POST['date']);
+		$occasion = sanitize_text_field($_POST['occasion']);
+		$post_title = sanitize_text_field($_POST['post_title']);
+		$author = sanitize_text_field($_POST['author']);
+		$reviewer = sanitize_text_field($_POST['reviewer']);
+		$wpdb->insert(
+			$table_name,
+			array(
+				'date' => $date,
+				'occasion' => $occasion,
+				'post_title' => $post_title,
+				'author' => $author,
+				'reviewer' => $reviewer
+			)
+		);
+	}
+ }
+
+ add_action('init','cont_c_submission_handle');
+ 
+ function cont_c_submission_handle()
+ {
+	if(isset($_POST['submit'])){
+		cont_c_handle_form();
+	}
+ }
+
 //adding menu pages
 
 function cont_c_menu_page()
@@ -105,23 +167,23 @@ function schedule_cont_callback()
   <h1 class="cont_title">Schedule</h1>
   <div class="wrap">
 
-   <form action="options.php" method="post">
+   <form method="post">
 
    <input type="hidden" name="action" value="cont_form">
 
    <label for="date">Date:</label>
-   <input type="date" name="date" id="date" value="<?php echo esc_attr(get_option('date'));?>" require/> <br />
+   <input type="date" name="date" id="date" value="<?php echo esc_attr(get_option('date'));?>" required/> <br />
 
    <label for="occasion">Occasion:</label>
-   <input type="text" name="ocasion" id="ocasion" value="<?php echo esc_attr(get_option('occasion'));?>" require/> <br />
+   <input type="text" name="occasion" id="occasion" value="<?php echo esc_attr(get_option('occasion'));?>" required/> <br />
    
 
    <label for="post_title">Post Title:</label>
-   <input type="text" name="post_title" id="post_title" value="<?php echo esc_attr(get_option('post_title'));?>" require/> <br />
+   <input type="text" name="post_title" id="post_title" value="<?php echo esc_attr(get_option('post_title'));?>" required/> <br />
    
 
    <label for="author">Author:</label>
-   <select name="author" id="author" require>
+   <select name="author" id="author" required>
 	<?php $users=get_users(array(
 		'fields' => array('ID','display_name')
 	));
@@ -135,9 +197,9 @@ function schedule_cont_callback()
    </select><br />
 
    <label for="reviewer">Reviewer:</label>
-   <select name="reviewer" id="reviewer" require>
+   <select name="reviewer" id="reviewer" required>
 	<?php
-	$admin= get_users(array('role' =>'administrator',
+	$admins= get_users(array('role' =>'administrator',
 	'fields' => array('ID','display_name')));
 
 	foreach($admins as $admin)
@@ -159,6 +221,54 @@ function schedule_cont_callback()
 function view_schedule_callback()
 {
 
+	?>
+	<h1 class="cc-title">Scheduled</h1>
+
+	<?php
+
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'cont_c_data';
+
+	$data = $wpdb->get_results("SELECT * FROM $table_name WHERE date >= DATE(NOW()) ORDER BY date");
+
+	echo '<table id="cc-table">';
+	echo '<thead><tr><th>ID</th><th>Date</th><th>Occasion</th><th>Post Title</th><th>Author</th><th>Reviewer</th></tr></thead>';
+	foreach ($data as $row) {
+		echo '<tr>';
+		echo '<td>' . $row->id . '</td>';
+		echo '<td>' . $row->date . '</td>';
+		echo '<td>' . $row->occasion . '</td>';
+		echo '<td>' . $row->post_title . '</td>';
+		echo '<td>' . get_userdata($row->author)->user_login . '</td>';
+		echo '<td>' . get_userdata($row->reviewer)->user_login . '</td>';
+		echo '</tr>';
+	}
+	echo '</table>';
+
+
+	?>
+	<h1 class="cc-title">Deadline Closed Content</h1>
+
+<?php
+
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'cont_c_data';
+
+	$data = $wpdb->get_results("SELECT * FROM $table_name WHERE date < DATE(NOW()) ORDER BY date DESC");
+
+	echo '<table id="cc-table">';
+	echo '<thead><tr><th>ID</th><th>Date</th><th>Occasion</th><th>Post Title</th><th>Author</th><th>Reviewer</th></tr></thead>';
+	foreach ($data as $row) {
+		echo '<tr>';
+		echo '<td>' . $row->id . '</td>';
+		echo '<td>' . $row->date . '</td>';
+		echo '<td>' . $row->occasion . '</td>';
+		echo '<td>' . $row->post_title . '</td>';
+		echo '<td>' . get_userdata($row->author)->user_login . '</td>';
+		echo '<td>' . get_userdata($row->reviewer)->user_login . '</td>';
+		echo '</tr>';
+	}
+	echo '</table>';
 }
 
 
