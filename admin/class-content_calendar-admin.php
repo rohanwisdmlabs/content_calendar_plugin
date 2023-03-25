@@ -100,4 +100,47 @@ class Content_calendar_Admin {
 
 	}
 
+
+	public function cont_c_menu_page()
+{
+	add_menu_page(__('Content Calendar','content_calendar'), 'Content Calendar','manage_options', 'content_calendar', 'content_calendar_callback', 'dashicons-calendar', 6);
+	add_submenu_page('content_calendar', __('Schedule Content','content_calendar'), __('Schedule Content','content_calendar'), 'manage_options', 'schedule_content', 'schedule_cont_callback');
+	add_submenu_page('content_calendar', __('View Schedule','content_calendar'), __('View Schedule','content_calendar'), 'manage_options', 'view_schedule', 'view_schedule_callback');
+
+}
+
+public function cont_c_handle_form()
+ {
+	global $wpdb;
+
+	if (isset($_POST['date']) && isset($_POST['occasion']) && isset($_POST['post_title']) && isset($_POST['author']) && isset($_POST['reviewer'])) {
+		$table_name = $wpdb->prefix . 'cont_c_data';
+		$date = sanitize_text_field($_POST['date']);
+		$occasion = sanitize_text_field($_POST['occasion']);
+		$post_title = sanitize_text_field($_POST['post_title']);
+		$author = sanitize_text_field($_POST['author']);
+		$reviewer = sanitize_text_field($_POST['reviewer']);
+		$wpdb->insert(
+			$table_name,
+			array(
+				'date' => $date,
+				'occasion' => $occasion,
+				'post_title' => $post_title,
+				'author' => $author,
+				'reviewer' => $reviewer
+			)
+		);
+	}
+ }
+
+
+//  public function cont_c_submission_handle()
+//  {
+// 	if(isset($_POST['submit'])){
+// 		cont_c_handle_form();
+// 	}
+//  }
+
+
+
 }

@@ -11,7 +11,7 @@
 }
 
 body {
-  background-color: whitesmoke;
+  background-color: rgb(252, 250, 250);
   box-sizing: border-box;
 }
 
@@ -23,6 +23,7 @@ form {
   display: inline-flex;
   flex-flow: row wrap;
   align-items: center;
+  padding: 10px 0;
 }
 
 label,
@@ -41,9 +42,9 @@ label {
 
 input,
 select {
-  width: 200px;
+  width: 168px;
   box-sizing: border-box;
-  margin-right: 10px;
+  margin-right: 34px;
 }
 
 #submit {
@@ -86,7 +87,7 @@ select {
 #cc-table th,
 #cc-table td {
   padding: 8px;
-  font-size: 18px;
+  font-size: 20px;
 }
 
 #cc-table tr {
@@ -104,7 +105,7 @@ select {
 
   #cc-table td:first-child {
     background-color: #222;
-    color: #fff;
+    color: #0b0404;
     text-align: center;
   }
 
